@@ -3,6 +3,7 @@ class Player{
 	dead = false;
 	fitness = 0;
 	reached = false;
+	blocked = false;
 	constructor(pos, vel, acc, goal){
 		this.pos = pos;
 		this.vel = vel;
@@ -43,7 +44,9 @@ class Player{
 		if(!this.reached)
 			this.fitness = 1 / (dis*dis);
 		else
-			this.fitness = 1; 
+			this.fitness = 1 + 1 / (this.brain.steps * this.brain.steps); 
+		/*if(this.blocked)
+			this.fitness = 1 / (dis*dis);*/
 	}
 
 	clone(){
@@ -66,6 +69,7 @@ class Player{
 			if(Math.abs(dist(this.pos.x, this.pos.y, obstacles[i][0]+8, obstacles[i][1]+8)) < 10.5)
 			{
 				this.dead = true;
+				this.blocked = true;
 				break;
 			}
 		}
