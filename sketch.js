@@ -6,12 +6,26 @@ var player;
 var goal;
 var startButton, stopButton, resumeButton, editButton;
 var start = false, stop = true, edit = false;
+var maxLevel = 30;
 var obstacles = [];
+var goals = [];
+var setGoals = 0;
 
 function setup(){
 	createCanvas(width, height);
 	background(backgroundColor);
-	goal = new Goal(width / 2, 10, 10, 10);
+	goal = new Goal(width / 2, 10, 10);
+	goals.push(goal);
+	for(let i = 0;i < height/16;i++)
+	{
+		var temp = [];
+		for(let j = 0;j < width/16;j++)
+		{	
+			temp.push(0);
+		}
+		obstacles.push(temp);
+	}
+
 	startButton = createButton("Start");
 	stopButton = createButton("Stop");
 	resumeButton = createButton("Resume");
@@ -24,9 +38,45 @@ function setup(){
 	startButton.mousePressed(()=>{
 		if(!edit)
 		{	
-			population = new Population(100, goal);
+			population = new Population(200, goal);
 			start = true;
 			stop = false;
+		}
+
+		/*for(var j = 0;j < 40;j++)
+		{
+			for(var i = 0;i < 30;i++)
+			{
+				if(obstacles[i][j] == 1 && i != 0 && obstacles[i-1][j] != 1)
+				{	
+					goals.push(new Goal(j*16+8, (i-1)*16+8, 10));
+					console.log(goals[1].x, goals[1].y);
+				}
+			}
+		}
+		for(var i = 0;i < 30;i++)
+		{
+			for(var j = 0;j < 40;j++)
+			{
+				if(obstacles[i][j] == 1 && j != 0 && obstacles[i][j-1] != 1)
+				{	
+					goals.push(new Goal((j-1)*16+8, i*16+8, 10));
+				}
+			}
+		}*/
+
+		if(setGoals >= 10)
+		{
+			for(var j = 0;j < obstacles[0].length;j++)
+			{
+				for(var i = 0;i < obstacles.length;i++)
+				{
+					if(obstacles[i][j] != 1)
+					{	
+						goals.push(new Goal(j*16+8, i*16+8, 10));
+					}
+				}
+			}
 		}
 	});
 	stopButton.mousePressed(()=>{
@@ -67,26 +117,50 @@ function draw() {
 		}
 	}
 	fill(0, 255, 0)
-	for(var i = 0;i < obstacles.length;i++)
+	for(var j = 0;j < obstacles.length;j++)
 	{
-		rect(obstacles[i][0], obstacles[i][1], 16, 16);
+		for(var i = 0;i < obstacles[0].length;i++)
+		{
+			if(obstacles[j][i] == 1)
+				rect(i*16, j*16, 16, 16);
+		}
 	}
 	if(start)
 	{
 		if(population != null)
-		population.update();
+			population.update();
 	}
 	if(population != null)
 		population.show();
 	goal.show();
+	//fill(0, 0, 255);
+	/*for(var i = 0;i < goals.length;i++)
+	{
+		ellipse(goals[i].x, goals[i].y, goals[i].size);
+	}*/
 }
 
 function mousePressed(){
-	if(edit)
+	if(edit && mouseX <= 640 && mouseY <= 480)
 	{
-		var x = Math.floor((mouseX)/16)*16;
-		var y = Math.floor((mouseY)/16)*16;
-		if(!((x == 304 && y == 0) || (x == 320 && y == 0) || (x == 304 && y == 432) || (x == 320 && y == 432)))
-			obstacles.push([x, y]);
+		var x = Math.floor((mouseX)/16);
+		var y = Math.floor((mouseY)/16);
+		for(var i = 0;i < goals.length;i++)
+		{
+			if((goals[i].x-8) / 16 == x && (goals[i].y - 8) / 16 == y)
+			{
+				goals.splice(i, 1);
+				i--;
+			}
+
+		}
+		if(!((x == 19 && y == 0) || (x == 20 && y == 0) || (x == 19 && y == 27) || (x == 20 && y == 432)))
+		{
+			setGoals++;
+			obstacles[y][x] = 1;
+		}
+
+		if(y < maxLevel)
+			maxLevel = y;
 	}
 }
